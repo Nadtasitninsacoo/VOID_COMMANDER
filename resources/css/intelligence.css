@@ -1,0 +1,35 @@
+/* resources/css/intelligence.css */
+
+/* Scanline Effect Layer */
+.scanline-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0.1;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 2px, 3px 100%;
+}
+
+/* Custom Scrollbar สำหรับ Code Block */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #000;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #1e3a8a;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #2563eb;
+}
+
+/* Background Pattern */
+.bg-carbon-fiber {
+    background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+}

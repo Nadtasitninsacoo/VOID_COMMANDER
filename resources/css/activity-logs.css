@@ -1,0 +1,28 @@
+ /* Tactical Pagination Styling (เก็บ CSS ไว้ที่นี่) */
+            .tactical-pagination .pagination {
+                @apply flex gap-2;
+            }
+
+            .tactical-pagination .page-item .page-link {
+                @apply bg-black border border-red-900/50 text-red-900 text-[10px] px-3 py-1 hover:border-red-600 hover:text-red-600 transition-all;
+            }
+
+            .tactical-pagination .page-item.active .page-link {
+                @apply bg-red-600 border-red-600 text-black font-black;
+            }
+
+            @keyframes scan {
+                0% {
+                    top: 0%;
+                    opacity: 0;
+                }
+
+                50% {
+                    opacity: 1;
+                }
+
+                100% {
+                    top: 100%;
+                    opacity: 0;
+                }
+            }

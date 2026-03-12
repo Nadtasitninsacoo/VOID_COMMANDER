@@ -1,0 +1,31 @@
+@import "tailwindcss";
+@import "./tactical-ui.css";
+
+/* --- VOID_COMMANDER BASE CONFIG --- */
+@layer base {
+    body, input, button, select, textarea {
+        background-color: #050505;
+        color: #e5e7eb;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* กำจัดขอบฟุ้งกระจายของ Focus ให้เป็นสีแดงตามธีม */
+    :focus {
+        outline-color: #991b1b;
+    }
+}
+
+/* --- TACTICAL SCROLLBAR --- */
+::-webkit-scrollbar {
+    width: 5px; /* ปรับให้เล็กลงเพื่อความ Minimal */
+}
+::-webkit-scrollbar-track {
+    background: #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+    background: #450a0a; /* เริ่มต้นด้วยแดงมืด */
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #991b1b; /* สว่างขึ้นเมื่อมีการสัมผัส (Hover) */
+}
