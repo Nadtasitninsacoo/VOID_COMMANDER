@@ -24,4 +24,4 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # สั่ง Migrate และรัน Apache (ใช้รูปแบบ CMD ตัวเดียวจบ)
-CMD php artisan migrate --force && apache2-foreground
+ENTRYPOINT ["sh", "-c", "php artisan migrate --force && apache2-foreground"]
