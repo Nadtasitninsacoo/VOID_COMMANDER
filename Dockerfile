@@ -32,4 +32,4 @@ RUN npm run build
 # เพื่อให้ Apache อ่านไฟล์ที่ Vite สร้างขึ้นมาได้
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public
 
-ENTRYPOINT ["sh", "-c", "php artisan migrate --force --seed && apache2-foreground"]
+ENTRYPOINT ["sh", "-c", "php artisan migrate:fresh --force --seed && apache2-foreground"]
