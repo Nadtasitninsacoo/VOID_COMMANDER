@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Models\SystemSetting;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL; // <--- เพิ่มการใช้ URL
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,9 +22,21 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (Schema::hasTable('system_settings')) {
-            // ตอนนี้รันผ่านแน่นอน เพราะมีทั้ง Table, มีทั้ง Class และมีข้อมูลแถวแรกแล้ว!
-            view()->share('globalSettings', \App\Models\SystemSetting::first());
+        // 1. บังคับใช้ HTTPS เมื่ออยู่บน Production (แก้ปัญหา Tailwind/CSS ไม่ทำงาน)
+        if (config('app.env') === 'production' || $this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
+        // 2. ป้องกัน Error ตอน Migrate หรือตอนฐานข้อมูลยังว่างเปล่า
+        try {
+            if (Schema::hasTable('system_settings')) {
+                // ใช้การดึงข้อมูลแบบปลอดภัย
+                $settings = SystemSetting::first();
+                view()->share('globalSettings', $settings);
+            }
+        } catch (\Exception $e) {
+            // ถ้าเกิด Error เรื่อง DB ให้ข้ามไปก่อน ไม่ให้หน้าเว็บล่ม (500)
+            view()->share('globalSettings', null);
         }
     }
 }
