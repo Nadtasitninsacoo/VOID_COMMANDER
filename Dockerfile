@@ -1,11 +1,11 @@
 FROM php:8.2-apache
 
-# ติดตั้ง System Dependencies
+# 1. ติดตั้ง System Dependencies (เพิ่ม libpq-dev เข้าไป)
 RUN apt-get update && apt-get install -y \
-    libpng-dev libonig-dev libxml2-dev zip unzip git
+    libpng-dev libonig-dev libxml2-dev zip unzip git libpq-dev
 
-# แก้ไขจาก pscntl เป็น pcntl (ลบตัว s ออก)
-RUN docker-php-ext-install pcntl bcmath gd mysqli pdo pdo_mysql
+# 2. ติดตั้ง PHP Extensions (ลบ mysqli/pdo_mysql ออก แล้วใส่ pdo_pgsql แทน)
+RUN docker-php-ext-install pcntl bcmath gd pdo pdo_pgsql
 
 # ตั้งค่า Apache ให้ชี้ไปที่โฟลเดอร์ public ของ Laravel
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
@@ -20,7 +20,8 @@ WORKDIR /var/www/html
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
-# ตั้งสิทธิ์ไฟล์ให้ Web Server เขียนข้อมูลลง storage ได้
+# ตั้งสิทธิ์ไฟล์
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-CMD ["apache2-foreground"]
+# สั่ง Migrate และรัน Apache (ใช้รูปแบบ CMD ตัวเดียวจบ)
+CMD php artisan migrate --force && apache2-foreground
