@@ -12,7 +12,10 @@ return new class extends Migration
             $table->id();
 
             // 👤 ผู้กระทำการ (เชื่อมกับตาราง users)
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('user_id')
+                ->nullable()
+                ->constrained('operatives') // <--- ระบุชื่อตารางเป้าหมายที่นี่!
+                ->onDelete('set null');
 
             // 📝 รายละเอียดเหตุการณ์
             $table->string('subject');          // หัวข้อ เช่น 'OPERATIVE_CREATED', 'SYSTEM_LOGIN'
