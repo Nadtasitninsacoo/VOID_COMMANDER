@@ -136,7 +136,36 @@
             csrfToken: '{{ csrf_token() }}'
         };
     </script>
-    <script src="{{ asset('js/kill_chain.js') }}"></script>
+    <script>
+    // --- 1. ส่วนของ Chart.js ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // วางโค้ดสร้างกราฟของท่านที่นี่
+    });
+
+    // --- 2. ส่วนของระบบอาวุธ (Global Scope) ---
+    window.selectedWeaponId = '';
+    window.setPayload = function (code, id, name) {
+        window.selectedWeaponId = id;
+        const payloadArea = document.getElementById('payload_area');
+        const log = document.getElementById('terminal_logs');
+        if (payloadArea) payloadArea.value = code;
+        if (log) {
+            log.innerHTML += `<p class="text-yellow-600">[${new Date().toLocaleTimeString()}] ⚔️ ARMING: ${name}</p>`;
+            log.scrollTop = log.scrollHeight;
+        }
+    };
+
+    // --- 3. ส่วนของระบบการยิง ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const strikeForm = document.getElementById('strikeForm');
+        if (strikeForm) {
+            strikeForm.onsubmit = function (e) {
+                e.preventDefault();
+                // วางโค้ด fetch ของ kill_chain_handler.js ที่นี่
+            };
+        }
+    });
+</script>
 </body>
 
 </html>
