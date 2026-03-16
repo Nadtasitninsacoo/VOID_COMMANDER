@@ -136,7 +136,7 @@
             csrfToken: '{{ csrf_token() }}'
         };
     </script>
-    <script src="{{ asset('js/welcome.js') }}"></script>
+    <script src="{{ asset('js/kill_chain.js') }}"></script>
 </body>
 
 </html>
