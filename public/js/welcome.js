@@ -76,4 +76,81 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // === 3. ระบบควบคุมคลังอาวุธ (WEAPON CONTROL SYSTEM) ===
+
+    // ฟังก์ชันเลือก Payload (ประกาศเป็น Global เพื่อให้ปุ่มใน Blade เรียกใช้ได้)
+    window.setPayload = function (payload, id, name) {
+        const payloadArea = document.getElementById('payload_area');
+        const weaponInput = document.getElementById('selected_weapon_id');
+        const terminal = document.getElementById('terminal_logs');
+
+        if (payloadArea) {
+            payloadArea.value = payload;
+            // เอฟเฟกต์กะพริบเมื่อบรรจุอาวุธสำเร็จ
+            payloadArea.style.borderColor = '#ff0000';
+            setTimeout(() => payloadArea.style.borderColor = '#991b1b80', 500);
+        }
+
+        if (weaponInput) weaponInput.value = id;
+
+        if (terminal) {
+            const time = new Date().toLocaleTimeString();
+            const log = document.createElement('p');
+            log.className = 'text-red-500 animate-pulse';
+            log.innerHTML = `>> [${time}] SYSTEM_ARMED: ${name} (ID: ${id}) - WAITING_FOR_STRIKE_CONFIRMATION`;
+            terminal.insertBefore(log, terminal.firstChild);
+        }
+    };
+
+    // ระบบส่งการโจมตี (Strike Execution)
+    const strikeForm = document.getElementById('strikeForm');
+    if (strikeForm) {
+        strikeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const terminal = document.getElementById('terminal_logs');
+            const target = strikeForm.target.value;
+            const payload = strikeForm.payload.value;
+
+            if (!target || !payload) {
+                alert('🚩 COMMAND_ERROR: ระบุพิกัดเป้าหมายและอาวุธก่อนทำการยิง!');
+                return;
+            }
+
+            // แสดงสถานะการยิงบน Terminal
+            const log = document.createElement('p');
+            log.className = 'text-yellow-500 font-bold';
+            log.innerHTML = `>> [${new Date().toLocaleTimeString()}] LAUNCHING_STRIKE -> TARGET: ${target}...`;
+            terminal.insertBefore(log, terminal.firstChild);
+
+            try {
+                const response = await fetch(window.StrikeConfig.executeRoute, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': window.StrikeConfig.csrfToken
+                    },
+                    body: JSON.stringify({
+                        target: target,
+                        payload: payload,
+                        weapon_id: document.getElementById('selected_weapon_id').value
+                    })
+                });
+
+                const result = await response.json();
+
+                const resLog = document.createElement('p');
+                resLog.className = result.success ? 'text-green-500' : 'text-red-600';
+                resLog.innerHTML = `>> [RESULT]: ${result.message}`;
+                terminal.insertBefore(resLog, terminal.firstChild);
+
+            } catch (error) {
+                const errLog = document.createElement('p');
+                errLog.className = 'text-red-600 font-black';
+                errLog.innerHTML = `>> [FATAL_ERROR]: การเชื่อมต่อฐานบัญชาการขัดข้อง!`;
+                terminal.insertBefore(errLog, terminal.firstChild);
+            }
+        });
+    }
 });
