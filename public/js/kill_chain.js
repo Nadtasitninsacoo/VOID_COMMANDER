@@ -70,4 +70,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
         log.scrollTop = log.scrollHeight;
     };
-});
+})
