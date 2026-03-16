@@ -1,6 +1,5 @@
 /**
- * 💀 KILL_CHAIN_CORE_SYSTEM
- * จัดการการยิง Payload และรับส่งข้อมูลกับ Backend
+ * 💀 KILL_CHAIN_CORE_SYSTEM (Optimized for Render)
  */
 window.selectedWeaponId = '';
 
@@ -25,7 +24,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const target = this.target.value;
             const log = document.getElementById('terminal_logs');
-            const csrfToken = document.querySelector('input[name="_token"]').value;
+            
+            // ดึง Token จาก Config หรือ Input ก็ได้ แต่ต้องมั่นใจว่ามีค่า
+            const csrfToken = window.StrikeConfig?.csrfToken || document.querySelector('input[name="_token"]')?.value;
 
             if (!target || !window.selectedWeaponId) {
                 log.innerHTML += `<p class="text-orange-500">[${new Date().toLocaleTimeString()}] ⚠️ WARNING: พิกัดเป้าหมายหรืออาวุธยังไม่ถูกติดตั้ง</p>`;
@@ -34,11 +35,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             log.innerHTML += `<p class="text-red-600 animate-pulse">[${new Date().toLocaleTimeString()}] 🚀 INITIALIZING_STRIKE: Connecting to -> ${target}</p>`;
 
-            // 📡 ส่งคำสั่งไปยัง Backend (ปรับ URL ให้ตรงกับ Route ของท่าน)
-            fetch("/admin/kill-chain/execute", {
+            // ใช้ Route จาก Config เพื่อป้องกันปัญหา Path ผิดพลาดบน Render
+            const executeUrl = window.StrikeConfig?.executeRoute || "/admin/kill-chain/execute";
+
+            fetch(executeUrl, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Accept": "application/json",
                     "X-CSRF-TOKEN": csrfToken
                 },
                 body: JSON.stringify({
@@ -46,29 +50,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     weapon_id: window.selectedWeaponId
                 })
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'SUCCESS') {
-                        log.innerHTML += `
-                        <div class="border-l-2 border-green-600 pl-2 my-2 bg-green-900/10">
-                            <p class="text-green-400 font-bold">[${new Date().toLocaleTimeString()}] ✅ STRIKE_SUCCESS</p>
-                            <p class="text-gray-400 text-[8px]">RESPONSE_CODE: ${data.code}</p>
-                            <p class="text-gray-400 text-[8px]">MESSAGE: ${data.message}</p>
-                        </div>
-                    `;
-                    } else {
-                        log.innerHTML += `
-                        <div class="border-l-2 border-red-600 pl-2 my-2 bg-red-900/10">
-                            <p class="text-red-500 font-bold">[${new Date().toLocaleTimeString()}] ❌ STRIKE_FAILED</p>
-                            <p class="text-gray-400 text-[8px]">ERROR: ${data.message}</p>
-                        </div>
-                    `;
-                    }
-                    log.scrollTop = log.scrollHeight;
-                })
-                .catch(error => {
-                    log.innerHTML += `<p class="text-red-800">[${new Date().toLocaleTimeString()}] 🚨 SYSTEM_CRITICAL: ${error.message}</p>`;
-                });
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP_ERROR: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                // ... ส่วนแสดงผล SUCCESS / FAILED เหมือนเดิมของท่าน ...
+                log.scrollTop = log.scrollHeight;
+            })
+            .catch(error => {
+                log.innerHTML += `<p class="text-red-800">[${new Date().toLocaleTimeString()}] 🚨 SYSTEM_CRITICAL: ${error.message}</p>`;
+                log.scrollTop = log.scrollHeight;
+            });
         };
     }
 });
