@@ -137,31 +137,91 @@
         };
     </script>
     <script>
-    // --- 1. ส่วนของ Chart.js ---
-    document.addEventListener('DOMContentLoaded', () => {
-        // วางโค้ดสร้างกราฟของท่านที่นี่
-    });
+    // --- 1. CONFIGURATION SYSTEM ---
+    window.StrikeConfig = {
+        executeRoute: '{{ route('admin.execute-strike') }}',
+        csrfToken: '{{ csrf_token() }}'
+    };
 
-    // --- 2. ส่วนของระบบอาวุธ (Global Scope) ---
-    window.selectedWeaponId = '';
+    // --- 2. WEAPON ARMING SYSTEM (GLOBAL) ---
     window.setPayload = function (code, id, name) {
-        window.selectedWeaponId = id;
         const payloadArea = document.getElementById('payload_area');
+        const weaponInput = document.getElementById('selected_weapon_id');
         const log = document.getElementById('terminal_logs');
+
         if (payloadArea) payloadArea.value = code;
+        if (weaponInput) weaponInput.value = id;
+
         if (log) {
-            log.innerHTML += `<p class="text-yellow-600">[${new Date().toLocaleTimeString()}] ⚔️ ARMING: ${name}</p>`;
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML += `<p class="text-yellow-600">[${time}] WEAPON_SYSTEM_ARMED: ${name} (${id}) Loaded.</p>`;
             log.scrollTop = log.scrollHeight;
         }
     };
 
-    // --- 3. ส่วนของระบบการยิง ---
+    // --- 3. DOM CONTENT LOADED (CHARTS & STRIKE) ---
     document.addEventListener('DOMContentLoaded', () => {
+        const log = document.getElementById('terminal_logs');
+
+        // 📊 [Chart.js Logic]
+        if (typeof Chart !== 'undefined') {
+            Chart.defaults.color = '#7f1d1d';
+            Chart.defaults.font.family = "'JetBrains Mono'";
+            // ... (ก๊อปปี้โค้ด Chart.js เดิมของท่านมาวางตรงนี้ได้เลย) ...
+        }
+
+        // 🚀 [Strike Execution Logic - Full Logic v1.0]
         const strikeForm = document.getElementById('strikeForm');
         if (strikeForm) {
-            strikeForm.onsubmit = function (e) {
+            strikeForm.onsubmit = async function (e) {
                 e.preventDefault();
-                // วางโค้ด fetch ของ kill_chain_handler.js ที่นี่
+
+                const formData = new FormData(this);
+                const weaponId = document.getElementById('selected_weapon_id').value;
+
+                // ตรวจสอบความพร้อมของอาวุธ
+                if (!weaponId) {
+                    log.innerHTML += `<p class="text-red-400">[${new Date().toLocaleTimeString()}] WARNING: No weapon system selected!</p>`;
+                    log.scrollTop = log.scrollHeight;
+                    return;
+                }
+
+                const payloadData = {
+                    target: formData.get('target'),
+                    weapon_id: weaponId,
+                    thread_count: formData.get('thread_count') || 1,
+                    _token: window.StrikeConfig.csrfToken
+                };
+
+                log.innerHTML += `<p class="text-red-600 animate-pulse">[${new Date().toLocaleTimeString()}] INITIALIZING_STRIKE: Dispatching to WSL Engine...</p>`;
+                log.scrollTop = log.scrollHeight;
+
+                try {
+                    const response = await fetch(window.StrikeConfig.executeRoute, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': window.StrikeConfig.csrfToken
+                        },
+                        body: JSON.stringify(payloadData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.status === 'SUCCESS') {
+                        log.innerHTML += `<p class="text-green-500">[${new Date().toLocaleTimeString()}] STRIKE_SUCCESS: ${result.message}</p>`;
+                        if (result.raw_log) {
+                            log.innerHTML += `<div class="text-gray-500 pl-4 border-l border-gray-800 my-2 bg-red-950/5 p-2 whitespace-pre-wrap font-mono text-[9px]">${result.raw_log}</div>`;
+                        }
+                    } else {
+                        log.innerHTML += `<p class="text-red-400">[${new Date().toLocaleTimeString()}] STRIKE_ERROR: ${result.message}</p>`;
+                    }
+                } catch (error) {
+                    log.innerHTML += `<p class="text-red-800">[${new Date().toLocaleTimeString()}] SYSTEM_CRITICAL: Connection to Controller Failed.</p>`;
+                }
+
+                log.scrollTop = log.scrollHeight;
             };
         }
     });
